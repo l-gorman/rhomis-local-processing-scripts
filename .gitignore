@@ -1,1 +1,7 @@
-
+log/
+unit_conversions/
+crop_data/
+indicators/
+livestock_data/
+mean_prices/
+processed_data/
