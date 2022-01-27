@@ -5,3 +5,4 @@ indicators/
 livestock_data/
 mean_prices/
 processed_data/
+renderMarkdown.sh
