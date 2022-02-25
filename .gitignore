@@ -1,3 +1,4 @@
+.env
 log/
 unit_conversions/
 crop_data/
