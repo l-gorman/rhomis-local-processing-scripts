@@ -2,7 +2,16 @@
 
 This is a suggested setup for processing RHoMIS data sets locally, using the [RHoMIS R-package](https://github.com/l-gorman/rhomis-R-package).
 
-## Getting the Code
+## 1. Installing the Package
+
+If you would like to install the package yourself, please enter the command:
+
+```
+devtools::install_github("git@github.com:l-gorman/rhomis-R-package.git")
+```
+
+## 2. Getting the Code
+
 ### Using the Command Line
 
 This is a folder showing how to process projects locally
@@ -16,14 +25,19 @@ using the RHoMIS R-package. If you are familiar with using the command line, and
 
 Alternatively, download the whole repository by selecting the drop-down menu labelled 'code', then selecting the 'Download ZIP' option. Once you have downloaded the zip, extract the files into a folder where you would like to conduct the analysis. It can be helpful to give this folder a meaningful name (e.g. a project name)
 
-## Processing Datasets
+## 3. Processing Datasets
 
-The file `usingRHoMIS.Rmd` contains guidance
-on how I have processed the data. This is still under development so it would
-be great to hear your thoughts on it. You can open this documentation in your browser by opening the file `usingRHoMIS.html`
-file. This should open directly in your browser. If it does not, then
-simply right-click and manually select open in browser.
+There are R scripts located in this directory. Numbered in the order
+which they should be used. 
+
+00. Preprocessing: This preprocesses the data, cleaning anything
+specific to the project. For example replacing village names, removing outliers etc..
+01. Unit Extraction: All project units are extracted
+02. Initial Calculation: Initial indicators are calculated, and prices are extracted,
+awaiting verification.
+03. Final Calculation: Using prices and calorie conversions, final
+indicators are calculated.
 
 ## Suggesting Changes
 
-Please report any problems you encounter in the issues section of this repo. 
+Please report any problems you encounter in the issues section of [this repo](https://github.com/l-gorman/rhomis-local-processing-scripts). 

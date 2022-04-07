@@ -33,7 +33,7 @@ Your directory structure should look something like this:
 ```
 📂 project
    ┗📂 raw-data
-     ┗📜 rhomis_data.csv
+     ┗📜 sample_project.csv
 ```
 
 In this case, your working directory should be the `project` folder.
@@ -43,20 +43,24 @@ In this case, your working directory should be the `project` folder.
 ### Extracting Units
 
 To extract new units from the data you are working with, run the
-code below. This code can also be found in the `extractValues.R` file, included 
+code below. This code can also be found in the `01-extract-values-and-initial-cleaning.R` file, included 
 alongside this Rmarkdown document.
 
 ```{r eval=FALSE, echo=T}
 library(rhomis)
 
-survey_file_path <- "./raw-data/rhomis_data.csv"
+new_units <- processData(
+   extractUnitsOnly = T, # The stage of data processing
 
-processData(
+   # Arguments to indicate the type of processing being done (local or on server)
    dataSource = "csv",
    outputType = "csv",
-   extractUnits = T,
-   processDataSet = F,
-   dataFilePath = survey_file_path
+
+   # Arguments used for processing local data sets
+   dataFilePath = "raw-data/sample_project.csv",
+   id_type = "string",
+   proj_id = "my_project_id",
+   form_id = "my_form_id"
 )
 ```
 
@@ -65,14 +69,21 @@ to see that more files have been added:
 
 ```
 📂 project
-   ┣📜 rhomis_data.csv
-   ┣📂 unit_conversions
+   ┣📂 raw-data
+   ┃ ┗📜 sample_project.csv
+   ┣📂 original_units
    ┃ ┣📜 crop_yield_units.csv
    ┃ ┣📜 country.csv
    ┃ ┗📜 ...
-   ┗📂 log 
-     ┗📜 warnings.log
+   ┗📂 converted_units
+     ┣📜 country.csv
+     ┗📜 ...
+
 ```
+
+The `original_units` folder includes the units directly calculated from the data.
+The `converted_units` folder should will include the units which you will
+verify and change.
 
 ### Converting Units
 
@@ -80,7 +91,7 @@ __Please note, while you do not _have_ to convert units for the next step in
 the calculations to run, uncoverted units will be ignored and will lead to 
 unnecessary missing values__
 
-In the `project/unit_conversions` directory, you will find a series of csv files 
+In the `project/converted_units` directory, you will find a series of csv files 
 with conversion factors that need to be filled in. Each file will look 
 like the table below. The first column indicates a value which was 
 found in the survey. The second column shows the conversion factor 
@@ -90,6 +101,7 @@ Known conversion factors are already embedded in the R-package.
 
 ```{r echo=F, eval=T}
 knitr::kable(data.frame(list(
+   id_rhomis_dataset = c("x", "x"),
    survey_value = c("foo", "bar"),
    conversion = c(NA, NA)
 )))
@@ -115,59 +127,71 @@ which units are needed. Each file is described in more detail below:
 | milk_units.csv  | The amount of milk  collected in litres per year. There are a number of exceptions which must be kept as text strings, and are dealt with in the analysis scripts (e.g. "per animal per day" and "l/animal/day" |  l/day  | 365 |
 | unitland.csv  | The amount of land in hectares |  acres  | 0.4  |
 
-### The Log file
 
-You may have noticed that there was a `log` folder located in the directory 
-structure, containing a file `warnings.log`. This file contains any warnings
-which were thrown as a result of running the `processData()` function. These
-warnings become particularly useful in the next section, where you will process 
-a data-set and calculate indicators. This log file will tell you which columns
-were missing from the data-set and how this affected your ability to calculate
-particular indicators.
-
-## Processing the Data
+## Processing the Data (Part 1)
 
 As with unit extraction, ensure you are in the project directory.
-Then enter the commands below (please note these are identical to the `processData.R` file):
+Then enter the commands below (or run the `02-calculate-initial-indicators.R` file):
 
 ```{r eval=FALSE, echo=T}
 library(rhomis)
 
-survey_file_path <- ".raw-data/rhomis_data.csv"
+new_units <- processData(
+   extractUnitsOnly = F, # The stage of data processing
+   calculateInitialIndicatorsOnly = T, # The stage of data processing
 
-processData(
+   # Arguments to indicate the type of processing being done (local or on server)
    dataSource = "csv",
    outputType = "csv",
-   extractUnits = F,
-   processDataSet = T,
-   dataFilePath = survey_file_path
+
+   # Arguments used for processing local data sets
+   dataFilePath = "raw-data/sample_project.csv",
+   id_type = "string",
+   proj_id = "my_project_id",
+   form_id = "my_form_id"
 )
 ```
-__Be careful that `extractUnits` is set to `FALSE`, otherwise the units 
-which were converted in the previous section will be overwritten.__
 
 You will now see that the directory structure again looks quite different:
 
 ```
 📂 project
-   ┣📜 rhomis_data.csv
-   ┣📂 unit_conversions
+   ┣📂 raw-data
+   ┃ ┗📜 sample_project.csv
+   ┣📂 processed_data
+   ┃ ┗📜 processed_data.csv
+   ┣📂 original_units
    ┃ ┣📜 bees_honey_production_units.csv
    ┃ ┣📜 crop_name.csv
    ┃ ┗📜 ...
-   ┣📂 log 
-   ┃ ┗📜 warnings.log
+   ┗📂 converted_units
+   ┃ ┣📜 country.csv
+   ┃ ┗📜 ...
+   ┣📂 original_calorie_conversions
+   ┃ ┣📜 crop_calories.csv
+   ┃ ┣📜 eggs_calories.csv
+   ┃ ┗📜 ...
+   ┗📂 completed_calorie_conversions
+   ┃ ┣📜 crop_calories.csv
+   ┃ ┗📜 ...
+   ┣📂 original_prices
+   ┃ ┣📜 crop_calories.csv
+   ┃ ┣📜 eggs_calories.csv
+   ┃ ┗📜 ...
+   ┗📂 converted_prices
+   ┃ ┣📜 crop_calories.csv
+   ┃ ┗📜 ...
    ┣📂 crop_data
    ┃ ┣📜 crop_consumed_kg_per_year.csv
    ┃ ┣📜 crop_harvest_kg_per_year.csv
    ┃ ┗📜 ...
-   ┣📂 indicators
+   ┣📂 indicator_data
    ┃ ┗📜 indicators.csv
    ┣📂 livestock_data
    ┃ ┣📜 crop_consumed_kg_per_year.csv
    ┃ ┣📜 crop_consumed_kg_per_year.csv
    ┃ ┗📜 ...
-   ┣📂 mean_prices
+   ┣📂 original_prices
    ┃ ┣📜 crop_prices.csv
    ┃ ┣📜 livestock_price_per_animal.csv
    ┃ ┗📜 ...
@@ -180,6 +204,109 @@ You will now see that the directory structure again looks quite different:
    
    
 ```
+
+### Converting Units
+
+As with the units which were extracted, you will also need to verify
+prices (in the `converted_prices` folder) and calorie values (in the
+`completed_calorie_conversions` folder). Prices will be in 
+lcu/kg for crops, meat, and eggs (where lcu is local currency units).
+Prices will be in lcu/l for milk and honey. And prices will be in 
+lcu/animal for whole livestock sales.
+
+For calorie values, conversions will be in kcal/kg or kcal/l.
+
+## Processing the Data (Part 2)
+
+Using the calories and prices you have converted, you will then be able to produce
+the final indicators. Either run the code below, or run the `03-calculate-final-indicators.R`
+file. 
+
+```{r eval=FALSE, echo=T}
+library(rhomis)
+
+new_units <- processData(
+   extractUnitsOnly = F, # The stage of data processing
+   calculateFinalIndicatorsOnly = T, # The stage of data processing
+
+   # Arguments to indicate the type of processing being done (local or on server)
+   dataSource = "csv",
+   outputType = "csv",
+
+   # Arguments used for processing local data sets
+   dataFilePath = "raw-data/sample_project.csv",
+   id_type = "string",
+   proj_id = "my_project_id",
+   form_id = "my_form_id"
+)
+```
+
+You will now see the directory includes some
+extra folders:
+
+You will now see that the directory structure again looks quite different:
+
+```
+📂 project
+   ┣📂 raw-data
+   ┃ ┗📜 sample_project.csv
+   ┣📂 processed_data
+   ┃ ┗📜 processed_data.csv
+   ┣📂 original_units
+   ┃ ┣📜 bees_honey_production_units.csv
+   ┃ ┣📜 crop_name.csv
+   ┃ ┗📜 ...
+   ┗📂 converted_units
+   ┃ ┣📜 country.csv
+   ┃ ┗📜 ...
+   ┣📂 original_calorie_conversions
+   ┃ ┣📜 crop_calories.csv
+   ┃ ┣📜 eggs_calories.csv
+   ┃ ┗📜 ...
+   ┗📂 completed_calorie_conversions
+   ┃ ┣📜 crop_calories.csv
+   ┃ ┗📜 ...
+   ┣📂 original_prices
+   ┃ ┣📜 crop_calories.csv
+   ┃ ┣📜 eggs_calories.csv
+   ┃ ┗📜 ...
+   ┗📂 converted_prices
+   ┃ ┣📜 crop_calories.csv
+   ┃ ┗📜 ...
+   ┣📂 crop_data
+   ┃ ┣📜 crop_consumed_kg_per_year.csv
+   ┃ ┣📜 crop_harvest_kg_per_year.csv
+   ┃ ┗📜 ...
+   ┣📂 indicator_data
+   ┃ ┗📜 indicators.csv
+   ┣📂 livestock_data
+   ┃ ┣📜 crop_consumed_kg_per_year.csv
+   ┃ ┣📜 crop_consumed_kg_per_year.csv
+   ┃ ┗📜 ...
+   ┣📂 original_prices
+   ┃ ┣📜 crop_prices.csv
+   ┃ ┣📜 livestock_price_per_animal.csv
+   ┃ ┗📜 ...
+   ┣📂 off_farm_data
+   ┃ ┣📜 offfarm_income_name.csv
+   ┃ ┣📜 offfarm_who_control_revenue.csv
+   ┃ ┗📜 ...
+   ┗📂 processed_data
+   ┃  ┗📜 processed_data.csv
+   ┣📂 consumption_calorie_values
+   ┃ ┣📜 crop_calories_consumed_kcal.csv
+   ┃ ┣📜 milk_calories_consumed_kcal.csv
+   ┃ ┗📜 ...
+   ┣📂 consumption_lcu_values
+   ┃ ┣📜 value_crop_consumed_lcu.csv
+   ┃ ┣📜 value_eggs_consumed_lcu.csv
+   ┃ ┗📜 ...  
+   ┗📂 gender_control
+     ┣📂 gender_control_amounts_consumed
+     ┣📂 gender_control_income
+     ┗📂 ... 
+```
+
 
 ## Outputs
 
@@ -204,22 +331,22 @@ again each row represents a household.
 Found in the `off_farm_data` directory, in each of the csvs, a column represents an off-farm activity, and each row represents 
 a household.
 
-## Extensions
+### Consumption Calories
 
-The format of this dataset, and the new developments in the R-package should make 
-it easier to calculate a range of indicators which were previously quite difficult
-to calculate yourself.
+Found in the `consumption_calorie_values` directory, in each of the csvs, a column represents the products listed in the survey, and each row represents 
+a household.
 
-However, it can be difficult to anticipate all of the calculations our users would 
-like to make. If there is anything you would like to calculate, we would be happy to
-try and help. Please raise any extensions/queries in the issues section, and we will
-do our best to assist.
+### Consumption value
 
-## Examples
+Found in the `consumption_lcu_values` directory, in each of the csvs, a column represents products listed in the survey, and each row represents 
+a household.
 
-Looking through the data you may notice that it looks slightly different to 
-previous versions of RHoMIS which you have seen. The data is now arranged in
-which should make usual calculations slightly easier. To see an example of 
-how to calculate the value of each product consumed, please refer to the 
-`valueCalculations.R` script.
+### Gender Control
 
+Found in the `gender_control` directory, in each of the csvs, a column represents products listed in the survey, and each row represents 
+a household.
+
+
+# Repo
+
+Please report any problems or requests you encounter in the issues section of [this repo](https://github.com/l-gorman/rhomis-local-processing-scripts). 
